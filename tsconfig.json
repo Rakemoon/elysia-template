@@ -28,7 +28,13 @@
     "baseUrl": "./",
     "paths": {
       "#decorators/*": ["./src/libs/decorators/*"],
-      "#structures/*": ["./src/libs/structures/*"]
+      "#structures/*": ["./src/libs/structures/*"],
+      "#validations/*": ["./src/libs/validations/*"],
+      "#constants/*": ["./src/libs/constants/*"],
+      "#types/*": ["./src/libs/types/*"],
+      "#util/*": ["./src/libs/util/*"],
+      "#components/*": ["./src/libs/components/*"],
+      "@Eli": ["./src/libs/Eli"]
     }
   }
 }

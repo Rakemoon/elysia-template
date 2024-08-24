@@ -1,9 +1,15 @@
 import "reflect-metadata";
 
-import RouteRegister from "./libs/components/RouteRegister";
 import path from "node:path";
+import Eli from "@Eli";
+import { LoggingLevel } from "#constants/index";
 
-const register = new RouteRegister()
-const eli = await register.exec(path.join(import.meta.dirname, "./routes"));
+const eli = new Eli({
+  port: "8080",
+  logLevel: LoggingLevel.Stdout,
+  routePath: path.join(import.meta.dirname, "./routes")
+});
 
-eli.listen("8080");
+await eli.init();
+
+eli.listen();

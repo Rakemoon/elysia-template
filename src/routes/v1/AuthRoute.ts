@@ -1,20 +1,18 @@
-import { ApplyOptions, GetFactory, PostFactory } from "#decorators/index";
-import Route, { type RouteReq } from "#structures/Route";
+import { ApplyOptions, Mount, UseValidate } from "#decorators/index";
+import Route, { type Context } from "#structures/Route";
+import AuthValidations from "#validations/AuthValidations";
 
-@ApplyOptions({ prefix: "/auth" })
+@ApplyOptions({ prefix: "/v1/auth" })
 export default class extends Route {
-  @GetFactory("/login")
-  public login(req: RouteReq) {
-    return "helo login";
+  @Mount("POST", "/login")
+  @UseValidate(AuthValidations.login)
+  public loginController(req: Context<AuthValidations.loginType>) {
+    return `Hello ${req.body.identifier} your password is ${req.body.password}`;
   }
 
-  @GetFactory("/register")
-  public register(req: RouteReq) {
-    return "helo register";
-  }
-
-  @GetFactory("/logout")
-  public logout(req: RouteReq) {
-    return "helo logout";
+  @Mount("POST", "/register")
+  @UseValidate(AuthValidations.register)
+  public registerController(req: Context<AuthValidations.registerType>) {
+    return `Hewwo`;
   }
 }
