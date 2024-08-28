@@ -1,4 +1,4 @@
-import { ApplyOptions, Mount } from "#decorators/index";
+import { AddDetail, ApplyOptions, Mount } from "#decorators/index";
 import Route from "#structures/Route";
 
 @ApplyOptions({
@@ -6,6 +6,7 @@ import Route from "#structures/Route";
 })
 export default class extends Route {
   @Mount("ALL", "/")
+  @AddDetail({ hide: true })
   public homeController() {
     return "hawwo!";
   }

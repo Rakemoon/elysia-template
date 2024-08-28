@@ -1,39 +1,92 @@
-import Elysia from "elysia";
-import Route from "#structures/Route";
+import Elysia, { InvalidCookieSignature, type DocumentDecoration } from "elysia";
+import Route, { type Context } from "#structures/Route";
 import { readdirRecursive } from "#util/index";
-import { RouteMetadata } from "#constants/index";
+import { AuthLevel, RouteMetadata, TokenTypes } from "#constants/index";
 import type Logging from "#components/Logging";
 import path from "node:path/posix";
+import UserService from "../services/UserService";
+import chalk from "chalk";
 
 export default class RouteRegister {
+
+  private cache: Route[] = [];
+
   public constructor(
     public log: Logging,
     public elysia: Elysia,
   ) {}
 
-  public async exec(dir: string) {
+  private doAssignAuth(level: AuthLevel, eli: Elysia) {
+    if (level !== AuthLevel.None) eli.onBeforeHandle(async ctx => {
+      const authorization = Reflect.get(ctx.headers, "authorization"); 
+      if (!authorization || !authorization.startsWith("Bearer ")) throw new InvalidCookieSignature("Unauthorized Auth");
+      const result = await (ctx as Context).jwt.verify(authorization.slice(7));
+      if (!result || result.type !== TokenTypes.Access) throw new InvalidCookieSignature("Unauthorized Auth");
+      const userLevel = await new UserService(ctx as Context).getUserLevel(result.sub ?? "no-id");
+      if (userLevel === undefined || userLevel < level) throw new InvalidCookieSignature("Unauthorized Auth");
+    });
+  }
+
+  private getMethodLog(method: string) {
+    switch(method) {
+      case "get": return chalk.green("GET");
+      case "post": return chalk.yellowBright("POST");
+      case "delete": return chalk.red("DELETE");
+      case "put": return chalk.blue("PUT");
+      case "patch": return chalk.hex("#FF00FF")("PATCH");
+      case "all": return chalk.red("A") + chalk.green("L") + chalk.blue("L") + " 💅";
+    }
+  }
+
+  public async collectTags(dir: string) {
+    const results: { name: string; description: string }[] = [];
     for await (const d of readdirRecursive(dir)) {
       const mod = await import(d);
+      this.log.info(chalk.yellow("\u25cf") + "\u2500\u253c", chalk.underline.bgYellow.black("Importing"), chalk.bold(mod.default.name));
       if (Reflect.has(mod, "default")) {
         if (mod.default?.prototype instanceof Route) {
-          this.log.info("Importing", mod.default.name);
           const route = new (mod.default as (new () => Route))();
-          const routes: Map<string, [key: string, method: string]> = Reflect.getMetadata(RouteMetadata.Register, route) ?? new Map();
-          const validations: Map<string, any> = Reflect.getMetadata(RouteMetadata.Validation, route) ?? new Map();
-          const eli = new Elysia();
-
-          if (route.options.onBefore) eli.onBeforeHandle(route.options.onBefore);
-          if (route.options.onAfter) eli.onAfterHandle(route.options.onAfter);
-
-          for (const [pathname, [key, method]] of routes.entries()) {
-            eli[method as "get"](
-              path.join("/", route.options.prefix, pathname), 
-              (route[key as keyof Route] as Function).bind(route), 
-              validations.get(key) ?? {});
-          }
-          this.elysia.use(eli);
+          this.cache.push(route);
+          if (route.options.name) results.push({
+            name: route.options.name,
+            description: route.options.description ?? "",
+          });
         }
       }
+    }
+    return results;
+  }
+
+  public async exec() {
+    for (const route of this.cache) {
+      const routes: Set<[key: string, method: string, path: string]> = Reflect.getMetadata(RouteMetadata.Register, route) ?? new Set();
+      const validations: Map<string, any> = Reflect.getMetadata(RouteMetadata.Validation, route) ?? new Map();
+      const details: Map<string, any> = Reflect.getMetadata(RouteMetadata.Detail, route) ?? new Map();
+
+      const eli = new Elysia();
+
+      if (route.options.authLevel) this.doAssignAuth(route.options.authLevel, eli);
+
+      if (route.options.onBefore) eli.onBeforeHandle(route.options.onBefore as any);
+      if (route.options.onAfter) eli.onAfterHandle(route.options.onAfter as any);
+
+      for (const [key, method, pathname] of routes.values()) {
+        const pathroute = path.join("/", route.options.prefix, pathname);
+        this.log.info("  \u251c\u2500\u2500", this.getMethodLog(method), chalk.bold(pathroute));
+        eli[method as "get"](
+          pathroute,
+          (route[key as keyof Route] as Function).bind(route), 
+          {
+            ...(validations.get(key) ?? {}),
+            detail: {
+              ...(details.get(key) ?? {}),
+              security: [route.options.authLevel ? { ["Auth Key"]: [] } : {}],
+            } as DocumentDecoration,
+            tags: route.options.name ? [route.options.name] : [],
+          }
+        );
+      }
+      this.elysia.use(eli);
     }
     return this.elysia;
   }

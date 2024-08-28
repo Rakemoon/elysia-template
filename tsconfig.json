@@ -34,6 +34,7 @@
       "#types/*": ["./src/libs/types/*"],
       "#util/*": ["./src/libs/util/*"],
       "#components/*": ["./src/libs/components/*"],
+      "#database/*": ["./src/libs/database/*"],
       "@Eli": ["./src/libs/Eli"]
     }
   }

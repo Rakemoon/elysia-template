@@ -3,13 +3,19 @@
   "module": "src/index.ts",
   "type": "module",
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "drizzle-kit": "^0.24.1"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@elysiajs/jwt": "^1.1.0",
+    "@elysiajs/swagger": "^1.1.1",
+    "@neondatabase/serverless": "^0.9.4",
     "chalk": "^5.3.0",
+    "date-fns": "^3.6.0",
+    "drizzle-orm": "^0.33.0",
     "elysia": "^1.1.7",
     "reflect-metadata": "^0.2.2",
     "socket.io": "^4.7.5"
