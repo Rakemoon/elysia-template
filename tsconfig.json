@@ -35,6 +35,7 @@
       "#util/*": ["./src/libs/util/*"],
       "#components/*": ["./src/libs/components/*"],
       "#database/*": ["./src/libs/database/*"],
+      "#services/*": ["./src/libs/services/*"],
       "@Eli": ["./src/libs/Eli"]
     }
   }

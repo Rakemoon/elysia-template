@@ -1,12 +1,14 @@
 import Logging from "#components/Logging";
 import RouteRegister from "#components/RouteRegister";
 import Elysia from "elysia";
-import type { LoggingLevel } from "#constants/index";
+import { LoggingLevel } from "#constants/index";
 import { jwt } from "@elysiajs/jwt";
 import ErrorHandler from "#components/ErrorHandler";
 import LoggingHandler from "#components/LoggingHandler";
 import chalk from "chalk";
 import { swagger } from "@elysiajs/swagger";
+
+import "reflect-metadata";
 
 type EliOptions = {
   routePath: string;
@@ -32,11 +34,10 @@ export default class Eli {
 
     //Registering Middleware
     new ErrorHandler(this).exec();
-    new LoggingHandler(this).exec();
+    if (this.options.logLevel > LoggingLevel.Silent) new LoggingHandler(this).exec();
 
-    this.eli
-      .use(jwt({ name: "jwt", secret: "Oh-My-JWT" }))
-      .use(swagger({ path: "docs", documentation: {
+    this.eli.use(jwt({ name: "jwt", secret: "Oh-My-JWT" }));
+    this.eli.use(swagger({ path: "docs", documentation: {
         info: {
           title: this.options.title,
           version: this.options.version,

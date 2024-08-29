@@ -16,12 +16,12 @@ export default class TokenService extends Service {
   public async createAccess(userId: string) {
     const expiration = addMinutes(new Date(), jwt.expireMinutes); 
     const token = await this.create(userId, getUnixTime(expiration), TokenTypes.Access);
-    return { expiration, token };
+    return { expiration: expiration.toISOString(), token };
   }
 
   public async createRefresh(userId: string) {
     const expiration = addDays(new Date(), jwt.expireDays); 
     const token = await this.create(userId, getUnixTime(expiration), TokenTypes.Refresh);
-    return { expiration, token };
+    return { expiration: expiration.toISOString(), token };
   }
 }

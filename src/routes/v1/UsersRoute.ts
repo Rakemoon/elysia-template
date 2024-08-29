@@ -10,7 +10,7 @@ import { NotFoundError } from "elysia";
   description: "Users CRUD, only `Admin` who can access this",
   authLevel: AuthLevel.Admin,
 })
-export default class extends Route {
+export default class UsersRoute extends Route {
   @Mount("GET", "/")
   @AddDetail({ description: "To retrieve user" })
   @UseValidate(UsersValidations.retrieve)
@@ -28,7 +28,7 @@ export default class extends Route {
   }
 
   @Mount("DELETE", "/")
-  @AddDetail({ description: "To remove user"})
+  @AddDetail({ description: "To remove user" })
   @UseValidate(UsersValidations.removes)
   public async contollerDeleteUsers(ctx: Context<UsersValidations.removesType>) {
     const users = this.useService(ctx, ServiceNames.User);

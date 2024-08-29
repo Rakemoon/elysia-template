@@ -2,7 +2,7 @@ import { AuthLevel } from "#constants/index";
 import { db } from "#database/connection";
 import { users } from "#database/schema";
 import Service from "#structures/Service";
-import { eq, inArray } from "drizzle-orm";
+import { count, eq, inArray } from "drizzle-orm";
 
 export default class UserService extends Service {
   public async getPlainUser(userId: string) {
@@ -19,6 +19,14 @@ export default class UserService extends Service {
     .from(users)
     .where(eq(users.email, email));
     return result as typeof result | undefined;
+  }
+
+  public async isEmailExist(email: string) {
+    const [result] = await db
+      .select({ count: count() })
+      .from(users)
+      .where(eq(users.email, email));
+    return result.count > 0;
   }
 
   public async createUser(data: typeof users.$inferInsert) {

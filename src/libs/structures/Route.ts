@@ -1,8 +1,8 @@
 import { type AuthLevel, ServiceNames } from "#constants/index";
 import type { JWTPayloadSpec } from "@elysiajs/jwt";
 import { StatusMap, type Handler } from "elysia";
-import TokenService from "../services/TokenService";
-import UserService from "../services/UserService";
+import TokenService from "#services/TokenService";
+import UserService from "#services/UserService";
 
 export type RouteOptions = {
   name?: string;
@@ -29,13 +29,17 @@ export type Context<T extends object = {}> = {
 
 export default abstract class Route {
   public constructor(
-    public options: RouteOptions
+    public options: RouteOptions = { prefix: "_no_prefixes_" }
   ) {}
 
-  public json<Data extends object>(data: Data, message = "", status: keyof StatusMap = "OK") {
+  public json
+  <Data extends unknown,
+  Message extends string = "",
+  Status extends keyof StatusMap = "OK">
+  (data: Data, message?: Message, status?: Status) {
     return {
-      status: StatusMap[status],
-      message,
+      status: StatusMap[status ?? "OK"] as typeof status extends undefined ? 200 : StatusMap[Status],
+      message: message as typeof message extends undefined ? "" : Message,
       data
     }
   }

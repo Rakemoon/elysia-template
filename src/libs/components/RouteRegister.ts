@@ -4,7 +4,7 @@ import { readdirRecursive } from "#util/index";
 import { AuthLevel, RouteMetadata, TokenTypes } from "#constants/index";
 import type Logging from "#components/Logging";
 import path from "node:path/posix";
-import UserService from "../services/UserService";
+import UserService from "#services/UserService";
 import chalk from "chalk";
 
 export default class RouteRegister {
@@ -69,6 +69,7 @@ export default class RouteRegister {
 
       if (route.options.onBefore) eli.onBeforeHandle(route.options.onBefore as any);
       if (route.options.onAfter) eli.onAfterHandle(route.options.onAfter as any);
+
 
       for (const [key, method, pathname] of routes.values()) {
         const pathroute = path.join("/", route.options.prefix, pathname);
