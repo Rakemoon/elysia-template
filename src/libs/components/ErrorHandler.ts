@@ -45,6 +45,6 @@ export default class ErrorHandler {
   };
 
   public exec() {
-    this.eli.eli.onError(this.handler);
+    this.eli.eli.onError(this.handler.bind(this));
   }
 }
