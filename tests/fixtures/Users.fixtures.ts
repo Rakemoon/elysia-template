@@ -6,19 +6,21 @@ import { createHash } from "#util/index";
 
 const cachedEmail = new Set();
 
-const createEmail = () => {
-  const email = faker.internet.email();
-  if (cachedEmail.has(email)) return createEmail();
+const createEmail = (firstName: string, lastName: string) => {
+  const email = faker.internet.email({ firstName, lastName });
+  if (cachedEmail.has(email)) return createEmail(firstName, lastName);
   cachedEmail.add(email);
   return email;
 }
 
 export const createRandomUsers = (makeAdmin: boolean): typeof users.$inferSelect => {
+  const firstName = faker.person.firstName();
+  const lastName = faker.person.lastName();
   return {
     id: faker.string.uuid(),
-    email: createEmail(),
-    fullname: faker.person.fullName(),
-    username: faker.internet.userName(),
+    email: createEmail(firstName, lastName),
+    fullname: faker.person.fullName({ firstName, lastName }),
+    username: faker.internet.userName({ firstName, lastName }).slice(0, 20),
     password: faker.internet.password(),
     role: makeAdmin ? "admin" : "user"
   }

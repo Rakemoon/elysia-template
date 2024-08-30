@@ -11,7 +11,7 @@ namespace AuthValidations {
 
   export const register = {
     body: t.Object({
-      username: t.String({ minLength: 4 }),
+      username: t.String({ minLength: 4, maxLength: 20 }),
       fullname: t.String({ minLength: 8 }),
       email: t.String({ format: "email" }),
       password: t.String({ minLength: 8 }),

@@ -1,8 +1,10 @@
 import { jwt } from "#constants/env";
 import { TokenTypes } from "#constants/index";
+import { CatchAllError } from "#decorators/index";
 import Service from "#structures/Service";
 import { addDays, addMinutes, getUnixTime } from "date-fns";
 
+@CatchAllError
 export default class TokenService extends Service {
   private async create(userId: string, exp: number, type: TokenTypes) {
     return this.ctx.jwt.sign({

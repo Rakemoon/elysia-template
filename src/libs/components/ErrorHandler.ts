@@ -1,6 +1,6 @@
 import Eli from "@Eli";;
 import Route from "#structures/Route";
-import type { ErrorHandler as ElysiaErrorHandler, } from "elysia";
+import { type ErrorHandler as ElysiaErrorHandler } from "elysia";
 
 export default class ErrorHandler {
   public constructor(private eli: Eli) {}
@@ -28,7 +28,7 @@ export default class ErrorHandler {
       case "INTERNAL_SERVER_ERROR":
         this.eli.log.error(ctx.error);
         ctx.set.status = "Internal Server Error";
-        return Route.prototype.json(null, "Internal Server Error", "Internal Server Error");
+        return Route.prototype.json(null, ctx.error.message as "-Internal Server Error Message- *Dont Use this as Equal Matcher", "Internal Server Error");
       case "INVALID_COOKIE_SIGNATURE":
         if (ctx.error.key === "failure") {
           ctx.set.status = "Bad Request";

@@ -1,6 +1,6 @@
 import Route, { type RouteOptions } from "#structures/Route";
 import { RouteMetadata } from "#constants/index";
-import type { DocumentDecoration, TSchema } from "elysia";
+import { InternalServerError, type DocumentDecoration, type TSchema } from "elysia";
 
 type Methods = "GET" | "POST" | "DELETE" | "PUT" | "PATCH" | "ALL";
 
@@ -38,6 +38,23 @@ export function AddDetail(detail: DocumentDecoration) {
     const result: Map<string, typeof detail> = Reflect.getMetadata(RouteMetadata.Detail, target) ?? new Map();
     result.set(key, detail);
     Reflect.defineMetadata(RouteMetadata.Detail, result, target);
+  }
+}
+
+export function CatchAllError(target: new (...args: any[]) => any) {
+  const keys = Reflect.ownKeys(target.prototype);
+  for (const key of keys) {
+    const prop = Reflect.getOwnPropertyDescriptor(target.prototype, key);
+    if (key === "constructor" || typeof prop?.value !== "function") continue;
+    const fn = prop.value;
+    prop.value = async function (...args: unknown[]) {
+      try {
+        return await fn.call(this, ...args);
+      } catch(e) {
+        throw new InternalServerError(`${target.constructor.name}: ${(e as Error).message}`);
+      }
+    }
+    Reflect.defineProperty(target.prototype, key, prop);
   }
 }
 

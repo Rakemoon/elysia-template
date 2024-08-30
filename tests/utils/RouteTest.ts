@@ -38,7 +38,7 @@ export default class RouteTest<BaseRoute extends Route> {
   public async req
   <Controller extends keyof typeof this._controllerTypes>
   (controller: Controller,
-  credentials: Partial<GetCredentials<typeof this._controllerTypes[Controller]>>): Promise<
+  credentials?: Partial<GetCredentials<typeof this._controllerTypes[Controller]> & { authorization: string }>): Promise<
   TestResponse<
     (typeof this._controllerTypes[Controller] extends (ctx: Context<any>) => infer Return
     ? Return extends PromiseLike<infer R>
@@ -54,18 +54,26 @@ export default class RouteTest<BaseRoute extends Route> {
       method: pathroute[1] === "all" ? "get" : pathroute[1]
     };
 
-    const body = Reflect.get(credentials, "body");
-    const params = Reflect.get(credentials, "params");
-    const query = Reflect.get(credentials, "query");
+    if (credentials) {
+      const body = Reflect.get(credentials, "body");
+      const params = Reflect.get(credentials, "params");
+      const query = Reflect.get(credentials, "query");
+      const authorization = Reflect.get(credentials, "authorization");
 
-    if (body) {
-      init.body = JSON.stringify(body);
-      init.headers ??= {};
-      (init.headers as Record<string, string>)["Content-Type"] = "application/json";
+      if (authorization) {
+        init.headers ??= {};
+        (init.headers as Record<string, string>)["Authorization"] = authorization;
+      }
+
+      if (body) {
+        init.body = JSON.stringify(body);
+        init.headers ??= {};
+        (init.headers as Record<string, string>)["Content-Type"] = "application/json";
+      }
+
+      if (params) for (const k in params) url = url.replace(`:${k}`, params[k] as string);
+      if (query) url += "?" + new URLSearchParams(query).toString();
     }
-
-    if (params) for (const k in params) url = url.replace(`:${k}`, params[k] as string);
-    if (query) url += "?" + new URLSearchParams(query).toString();
 
     const response = await this.eli.eli.handle(new Request(url, init));
     let result = await response.text();

@@ -7,6 +7,7 @@ export const enum RouteMetadata {
 export const enum LoggingLevel {
   Silent,
   Stdout,
+  JustShowError,
 }
 
 export const enum AuthLevel {

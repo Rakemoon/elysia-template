@@ -24,6 +24,7 @@ export default class AuthRoute extends Route {
       ctx.set.status = "Bad Request";
       return this.json(null, "Users Not Found", "Bad Request");
     }
+
     const isPasswordCorrect = await compareHash(password, user.password);
     if (!isPasswordCorrect) {
       ctx.set.status = "Unauthorized";
@@ -42,6 +43,7 @@ export default class AuthRoute extends Route {
 
   @Mount("POST", "register")
   @UseValidate(AuthValidations.register)
+  @AddDetail({ description: "Endpoint to registering the user" })
   public async registerController(ctx: Context<AuthValidations.registerType>) {
     const { username, email, password, fullname } = ctx.body;
     const users = this.useService(ctx, ServiceNames.User);
@@ -55,10 +57,5 @@ export default class AuthRoute extends Route {
     ctx.set.status = "Created";
     if (!ctx.query.nextLogin) return this.json({}, "Success Registering User!", "Created");
     return this.loginController({ ...ctx, body: { password, email }, query: {}});
-  }
-
-  @Mount("DELETE", "delete")
-  public async logoutController(ctx: Context) {
-    return this.json({}, "Success Logout");
   }
 }

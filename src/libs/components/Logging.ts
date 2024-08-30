@@ -14,7 +14,7 @@ export default class Logging {
   }
 
   public error(...args: unknown[]) {
-    if (this.showStdout) return console.error(...args);
+    if (this.showStdout || this.level === LoggingLevel.JustShowError) return console.error(...args);
   }
 
   public warn(...args: unknown[]) {
