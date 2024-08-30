@@ -7,7 +7,6 @@ const { version } = await readFile(path.join(import.meta.dirname, "../package.js
 
 const eli = new Eli({
   port: "8080",
-  logLevel: LoggingLevel.Stdout,
   routePath: path.join(import.meta.dirname, "./routes"),
   title: "Inventory System",
   description: "Inventory management that just like you!",

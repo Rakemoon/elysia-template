@@ -9,10 +9,10 @@ import chalk from "chalk";
 import { swagger } from "@elysiajs/swagger";
 
 import "reflect-metadata";
+import { environtment } from "#constants/env";
 
 type EliOptions = {
   routePath: string;
-  logLevel: LoggingLevel;
   port: string;
   title: string;
   version: string;
@@ -25,7 +25,7 @@ export default class Eli {
   public constructor(
     public options: EliOptions,
   ) {
-    this.log = new Logging(this.options.logLevel);
+    this.log = new Logging(environtment === "development" ? LoggingLevel.Stdout : LoggingLevel.Silent);
     this.eli = new Elysia();
   }
 
@@ -34,7 +34,7 @@ export default class Eli {
 
     //Registering Middleware
     new ErrorHandler(this).exec();
-    if (this.options.logLevel > LoggingLevel.Silent) new LoggingHandler(this).exec();
+    if (this.log.level > LoggingLevel.Silent) new LoggingHandler(this).exec();
 
     this.eli.use(jwt({ name: "jwt", secret: "Oh-My-JWT" }));
     this.eli.use(swagger({ path: "docs", documentation: {
