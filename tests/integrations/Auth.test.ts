@@ -4,6 +4,7 @@ import AuthRoute from "src/routes/v1/AuthRoute";
 import RouteTest from "tests/utils/RouteTest";
 import { ISOStringRegex, JWTTokenRegex, UUIDRegex } from "tests/utils/Regex";
 import { seed, createRandomUsers, nuke, isEmailExist } from "tests/fixtures/Users.fixtures";
+import { compareHash } from "#util/index";
 
 const route = new RouteTest(EliTest, new AuthRoute());
 
@@ -26,7 +27,7 @@ describe("Authorization Test", () => {
       expect(bodyResult.data).toEqual({
         user: {
           email: loginUser.email,
-          password: loginUser.password,
+          password: expect.any(String),
           username: loginUser.username,
           fullname: loginUser.fullname,
           role: loginUser.role,
@@ -41,6 +42,10 @@ describe("Authorization Test", () => {
           expiration: expect.stringMatching(ISOStringRegex),
         },
       });
+      if (bodyResult.status === 200) {
+        const isPasswordSame = await compareHash(loginUser.password, bodyResult.data.user.password);
+        expect(isPasswordSame).toBeTrue();
+      }
     });
     it("should response 400 (Bad Request) when credentials is invalid", async () => {
       const { bodyResult } = await route.req("loginController", {
@@ -126,7 +131,7 @@ describe("Authorization Test", () => {
       expect(bodyResult.data).toEqual({
         user: {
           email: registerUser.email,
-          password: registerUser.password,
+          password: expect.any(String),
           username: registerUser.username,
           fullname: registerUser.fullname,
           role: registerUser.role,
@@ -141,6 +146,10 @@ describe("Authorization Test", () => {
           expiration: expect.stringMatching(ISOStringRegex),
         },
       });
+      if (bodyResult.status === 200) {
+        const isPasswordSame = await compareHash(registerUser.password, bodyResult.data.user.password);
+        expect(isPasswordSame).toBeTrue();
+      }
     });
     it("should response 400 (Bad Request) when username is less than 4 character", async () => {
       const { bodyResult } = await route.req("registerController", {

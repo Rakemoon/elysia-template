@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";;
 import { db } from "#database/connection";
 import { users } from "#database/schema";
 import { count, eq } from "drizzle-orm";
+import { createHash } from "#util/index";
 
 const cachedEmail = new Set();
 
@@ -28,7 +29,10 @@ export const seed = async (makeAdmin = false) => {
   
   await db
   .insert(users)
-  .values({ ...user });
+  .values({
+    ...user,
+    password: await createHash(user.password)
+  });
 
   return user;
 }

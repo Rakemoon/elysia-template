@@ -2,6 +2,7 @@ import { AuthLevel } from "#constants/index";
 import { db } from "#database/connection";
 import { users } from "#database/schema";
 import Service from "#structures/Service";
+import { createHash } from "#util/index";
 import { count, eq, inArray } from "drizzle-orm";
 
 export default class UserService extends Service {
@@ -30,6 +31,7 @@ export default class UserService extends Service {
   }
 
   public async createUser(data: typeof users.$inferInsert) {
+    data.password = await createHash(data.password);
     return await db
       .insert(users)
       .values(data);

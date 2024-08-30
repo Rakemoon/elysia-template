@@ -1,5 +1,6 @@
 import { db } from "#database/connection";
 import { users } from "#database/schema";
+import { createHash } from "#util/index";
 import { count, eq } from "drizzle-orm";
 
 const [result] = await db
@@ -14,7 +15,7 @@ if (!result.count) await db
       username: "admin",
       fullname: "Admin",
       email: "admin@example.com",
-      password: "password123",
+      password: await createHash("password123"),
       role: "admin",
     }
   ]);

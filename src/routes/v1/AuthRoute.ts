@@ -1,8 +1,8 @@
 import { ServiceNames } from "#constants/index";
 import { AddDetail, ApplyOptions, Mount, UseValidate } from "#decorators/index";
 import Route, { type Context } from "#structures/Route";
+import { compareHash } from "#util/index";
 import AuthValidations from "#validations/AuthValidations";
-import { InvalidCookieSignature } from "elysia";
 
 @ApplyOptions({
   prefix: "/v1/auth",
@@ -24,7 +24,8 @@ export default class AuthRoute extends Route {
       ctx.set.status = "Bad Request";
       return this.json(null, "Users Not Found", "Bad Request");
     }
-    if (user.password !== password) {
+    const isPasswordCorrect = await compareHash(password, user.password);
+    if (!isPasswordCorrect) {
       ctx.set.status = "Unauthorized";
       return this.json(null, "Wrong Password", "Unauthorized");
     }

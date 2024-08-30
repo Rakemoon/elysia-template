@@ -33,3 +33,13 @@ export async function readFile
 export async function writeFile(dir: string, data: Blob | NodeJS.TypedArray | ArrayBufferLike | string | globalThis.Bun.BlobPart[]) {
   return Bun.write(dir, data);
 }
+
+export async function createHash(password: string) {
+  const result = await Bun.password.hash(password);
+
+  return result;
+}
+
+export async function compareHash(password: string, hash: string) {
+  return Bun.password.verify(password, hash);
+}
