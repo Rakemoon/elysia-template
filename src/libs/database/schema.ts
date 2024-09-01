@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
+import { boolean, pgEnum, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 
 export const roles = pgEnum("roles", [
   "admin",
@@ -12,6 +12,7 @@ export const users = pgTable("users", {
   email: varchar("email", { length: 255 }).unique().notNull(),
   password: varchar("password", { length: 255 }).notNull(),
   role: roles("role").default("user").notNull(),
+  emailVerified: boolean("email_verified").default(false).notNull(),
 });
 
 export const token = pgTable("refresh_token", {

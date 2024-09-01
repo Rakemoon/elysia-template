@@ -15,6 +15,20 @@
       "when": 1724982223478,
       "tag": "0001_clammy_dreadnoughts",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1725095263671,
+      "tag": "0002_known_wind_dancer",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1725095698415,
+      "tag": "0003_concerned_greymalkin",
+      "breakpoints": true
     }
   ]
 }

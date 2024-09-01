@@ -16,15 +16,18 @@ export default class RouteRegister {
     public elysia: Elysia,
   ) {}
 
+  private async authHandler(level: AuthLevel, ctx: Context) {
+    const authorization = Reflect.get(ctx.headers, "authorization"); 
+    if (!authorization || !authorization.startsWith("Bearer ")) throw new InvalidCookieSignature("Unauthorized Auth");
+    const result = await (ctx as Context).jwt.verify(authorization.slice(7));
+    if (!result || result.type !== TokenTypes.Access) throw new InvalidCookieSignature("Unauthorized Auth");
+    const userLevel = await new UserService(ctx as Context).getUserLevel(result.sub ?? "no-id");
+    if (userLevel === undefined || userLevel < level) throw new InvalidCookieSignature("Unauthorized Auth");
+    Reflect.set(ctx, "userId", result.sub);
+  }
+
   private doAssignAuth(level: AuthLevel, eli: Elysia) {
-    if (level !== AuthLevel.None) eli.onBeforeHandle(async ctx => {
-      const authorization = Reflect.get(ctx.headers, "authorization"); 
-      if (!authorization || !authorization.startsWith("Bearer ")) throw new InvalidCookieSignature("Unauthorized Auth");
-      const result = await (ctx as Context).jwt.verify(authorization.slice(7));
-      if (!result || result.type !== TokenTypes.Access) throw new InvalidCookieSignature("Unauthorized Auth");
-      const userLevel = await new UserService(ctx as Context).getUserLevel(result.sub ?? "no-id");
-      if (userLevel === undefined || userLevel < level) throw new InvalidCookieSignature("Unauthorized Auth");
-    });
+    if (level !== AuthLevel.None) eli.onBeforeHandle(this.authHandler.bind(null, level) as never);
   }
 
   private getMethodLog(method: string) {
@@ -62,6 +65,7 @@ export default class RouteRegister {
       const routes: Set<[key: string, method: string, path: string]> = Reflect.getMetadata(RouteMetadata.Register, route) ?? new Set();
       const validations: Map<string, any> = Reflect.getMetadata(RouteMetadata.Validation, route) ?? new Map();
       const details: Map<string, any> = Reflect.getMetadata(RouteMetadata.Detail, route) ?? new Map();
+      const auths: Map<string, AuthLevel> = Reflect.getMetadata(RouteMetadata.AuthLevel, route) ?? new Map();
 
       const eli = new Elysia();
 
@@ -73,15 +77,22 @@ export default class RouteRegister {
 
       for (const [key, method, pathname] of routes.values()) {
         const pathroute = path.join("/", route.options.prefix, pathname);
+        let authLevel = route.options.authLevel;
+        let beforeHandle;
+        if (auths.has(key)) {
+          authLevel = auths.get(key);
+          if (authLevel) beforeHandle = this.authHandler.bind(null, authLevel);
+        }
         this.log.info("  \u251c\u2500\u2500", this.getMethodLog(method), chalk.bold(pathroute));
         eli[method as "get"](
           pathroute,
           (route[key as keyof Route] as Function).bind(route), 
           {
+            ...(beforeHandle !== undefined ? { beforeHandle: beforeHandle } : {}),
             ...(validations.get(key) ?? {}),
             detail: {
               ...(details.get(key) ?? {}),
-              security: [route.options.authLevel ? { ["Auth Key"]: [] } : {}],
+              security: [authLevel ? { ["Auth Key"]: [] } : {}],
             } as DocumentDecoration,
             tags: route.options.name ? [route.options.name] : [],
           }

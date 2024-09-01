@@ -22,7 +22,8 @@ export const createRandomUsers = (makeAdmin: boolean): typeof users.$inferSelect
     fullname: faker.person.fullName({ firstName, lastName }),
     username: faker.internet.userName({ firstName, lastName }).slice(0, 20),
     password: faker.internet.password(),
-    role: makeAdmin ? "admin" : "user"
+    role: makeAdmin ? "admin" : "user",
+    emailVerified: false,
   }
 }
 

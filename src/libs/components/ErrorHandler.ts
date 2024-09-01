@@ -20,7 +20,7 @@ export default class ErrorHandler {
       case "NOT_FOUND":
         this.eli.log.error(ctx.error);
         ctx.set.status = "Not Found";
-        return Route.prototype.json(null, ctx.error.message as "-Not Found Message- *Dont Use this as Equal Matcher" ?? "Route Not Found", "Not Found");
+        return Route.prototype.json(null, ctx.error?.message as "-Not Found Message- *Dont Use this as Equal Matcher" ?? "Route Not Found", "Not Found");
       case "PARSE":
         this.eli.log.error(ctx.error);
         ctx.set.status = "Bad Request";
@@ -45,6 +45,8 @@ export default class ErrorHandler {
   };
 
   public exec() {
-    this.eli.eli.onError(this.handler.bind(this));
+    this.eli.eli.onError(ctx => {
+      return this.handler.call(this, ctx);
+    });
   }
 }

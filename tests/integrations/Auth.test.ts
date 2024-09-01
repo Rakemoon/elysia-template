@@ -32,6 +32,7 @@ describe("Authorization Test", () => {
           fullname: loginUser.fullname,
           role: loginUser.role,
           id: loginUser.id,
+          emailVerified: loginUser.emailVerified,
         },
         access: {
           token: expect.stringMatching(JWTTokenRegex),
@@ -136,6 +137,7 @@ describe("Authorization Test", () => {
           fullname: registerUser.fullname,
           role: registerUser.role,
           id: expect.stringMatching(UUIDRegex),
+          emailVerified: registerUser.emailVerified,
         },
         access: {
           token: expect.stringMatching(JWTTokenRegex),

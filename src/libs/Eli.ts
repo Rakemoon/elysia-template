@@ -10,8 +10,7 @@ import { swagger } from "@elysiajs/swagger";
 
 import "reflect-metadata";
 import { environtment, jwt as configJwt } from "#constants/env";
-
-const elysia = new Elysia().use(jwt({ name: "jwt", secret: configJwt.secret }));
+import EmailService from "#services/EmailService";
 
 type EliOptions = {
   routePath: string;
@@ -23,7 +22,7 @@ type EliOptions = {
 
 export default class Eli {
   public log: Logging;
-  public eli = elysia;
+  public eli = new Elysia();
   public constructor(
     public options: EliOptions,
   ) {
@@ -31,12 +30,14 @@ export default class Eli {
   }
 
   public async init() {
-    const regRoute = new RouteRegister(this.log, this.eli as unknown as Elysia);
+    await EmailService.initTransport(this.log);
+    const regRoute = new RouteRegister(this.log, this.eli);
 
     //Registering Middleware
     new ErrorHandler(this).exec();
     if (this.log.level > LoggingLevel.Silent) new LoggingHandler(this).exec();
 
+    this.eli.use(jwt({ name: "jwt", secret: configJwt.secret }));
     this.eli.use(swagger({ path: "docs", documentation: {
         info: {
           title: this.options.title,

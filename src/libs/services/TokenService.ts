@@ -26,4 +26,16 @@ export default class TokenService extends Service {
     const token = await this.create(userId, getUnixTime(expiration), TokenTypes.Refresh);
     return { expiration: expiration.toISOString(), token };
   }
+
+  public async createVerificationEmail(userId: string) {
+    const expiration = addMinutes(new Date(), jwt.expireMinutes);
+    const token = await this.create(userId, getUnixTime(expiration), TokenTypes.EmailVerification);
+    return { expiration: expiration.toISOString(), token };
+  }
+
+  public async createResetPassword(userId: string) {
+    const expiration = addMinutes(new Date(), jwt.expireMinutes);
+    const token = await this.create(userId, getUnixTime(expiration), TokenTypes.ResetPassword);
+    return { expiration: expiration.toISOString(), token };
+  }
 }

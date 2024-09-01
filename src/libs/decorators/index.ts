@@ -1,5 +1,5 @@
 import Route, { type RouteOptions } from "#structures/Route";
-import { RouteMetadata } from "#constants/index";
+import { AuthLevel, RouteMetadata } from "#constants/index";
 import { InternalServerError, type DocumentDecoration, type TSchema } from "elysia";
 
 type Methods = "GET" | "POST" | "DELETE" | "PUT" | "PATCH" | "ALL";
@@ -30,6 +30,14 @@ export function UseValidate(schema: {
     const result = Reflect.getMetadata(RouteMetadata.Validation, target) ?? new Map<string, typeof schema>();
     result.set(key, schema);
     Reflect.defineMetadata(RouteMetadata.Validation, result, target);
+  }
+}
+
+export function UseAuth(level: AuthLevel) {
+  return (target: Route, key: string) => {
+    const result = Reflect.getMetadata(RouteMetadata.AuthLevel, target) ?? new Map<string, AuthLevel>();
+    result.set(key, level);
+    Reflect.defineMetadata(RouteMetadata.AuthLevel, result, target);
   }
 }
 

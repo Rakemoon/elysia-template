@@ -1,5 +1,7 @@
-import { ServiceNames } from "#constants/index";
-import { AddDetail, ApplyOptions, Mount, UseValidate } from "#decorators/index";
+import { email } from "#constants/env";
+import { AuthLevel, ServiceNames, TokenTypes } from "#constants/index";
+import { token } from "#database/schema";
+import { AddDetail, ApplyOptions, Mount, UseAuth, UseValidate } from "#decorators/index";
 import Route, { type Context } from "#structures/Route";
 import { compareHash } from "#util/index";
 import AuthValidations from "#validations/AuthValidations";
@@ -57,5 +59,75 @@ export default class AuthRoute extends Route {
     ctx.set.status = "Created";
     if (!ctx.query.nextLogin) return this.json({}, "Success Registering User!", "Created");
     return this.loginController({ ...ctx, body: { password, email }, query: {}});
+  }
+
+  @Mount("POST", "verification-email")
+  @UseAuth(AuthLevel.User)
+  @UseValidate(AuthValidations.createVerificationEmail)
+  @AddDetail({ description: "This endpoint will send an email verification to user who access this endpoint" })
+  public async createVerificationEmailController(ctx: Context<AuthValidations.createVerificationEmailType>) {
+    const users = this.useService(ctx, ServiceNames.User);
+    const mailer = this.useService(ctx, ServiceNames.Email);
+    const tokens = this.useService(ctx, ServiceNames.Token);
+
+    const result = await users.getPlainUser(ctx.userId!);
+    const token = await tokens.createVerificationEmail(result!.id);
+    await mailer.sendVerificationMail(result!.email, ctx.body.link, token.token);
+    return this.json(null, "Success Sending email!");
+  }
+
+  @Mount("PUT", "verification-email")
+  @UseValidate(AuthValidations.doVerificationEmail)
+  @AddDetail({ description: "This enpoint will verify verification email token" })
+  public async doVerificationEmailController(ctx: Context<AuthValidations.doVerificationEmailType>) {
+    const users = this.useService(ctx, ServiceNames.User);
+    try {
+      const payload = await ctx.jwt.verify(ctx.body.token);
+      if (!payload || payload.type !== TokenTypes.EmailVerification || !payload.sub) throw "NotFound";
+      await users.updateUser(payload.sub, { emailVerified: true });
+      return this.json(null, "Success verify the email");
+    } catch (e) {
+      if (e === "NotFound") {
+        ctx.set.status = "Not Found";
+        return this.json(null, "Token Not Found", "Not Found");
+      }
+      throw e;
+    }
+  }
+
+  @Mount("POST", "forgot-password")
+  @UseValidate(AuthValidations.createForgotPassword)
+  @AddDetail({ description: "This endpoint will send an forgot password email" })
+  public async createForgotPasswordController(ctx: Context<AuthValidations.createForgotPasswordType>) {
+    const users = this.useService(ctx, ServiceNames.User);
+    const emails = this.useService(ctx, ServiceNames.Email);
+    const tokens = this.useService(ctx, ServiceNames.Token);
+    const user = await users.getUserByEmail(ctx.body.email);
+    if (!user) {
+      ctx.set.status = "Not Found";
+      return this.json(null, "User Not Found", "Not Found");
+    }
+    const token = await tokens.createResetPassword(user.id);
+    emails.sendForgotPasswordMail(user.email, ctx.body.link, token.token);
+    return this.json(null, "Success sending forgot password email");
+  }
+
+  @Mount("PUT", "forgot-password")
+  @UseValidate(AuthValidations.doVerificationEmail)
+  @AddDetail({ description: "This endpoint will verify forgot password" })
+  public async doForgotPasswordController(ctx: Context<AuthValidations.doForgotPasswordType>) {
+    const users = this.useService(ctx, ServiceNames.User);
+    try {
+      const payload = await ctx.jwt.verify(ctx.body.token);
+      if (!payload || payload.type !== TokenTypes.ResetPassword || !payload.sub) throw "NotFound";
+      await users.updateUser(payload.sub, { password: ctx.body.password });
+      return this.json(null, "Success verify the email");
+    } catch (e) {
+      if (e === "NotFound") {
+        ctx.set.status = "Not Found";
+        return this.json(null, "Token Not Found", "Not Found");
+      }
+      throw e;
+    }
   }
 }

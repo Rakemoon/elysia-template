@@ -31,7 +31,8 @@ describe("Users Crud Test", () => {
         password: expect.any(String),
         username: expect.any(String),
         role: expect.stringMatching(/admin|user/),
-        fullname: expect.any(String)
+        fullname: expect.any(String),
+        emailVerified: expect.any(Boolean),
       });
     });
     it("should response 200 (Ok) when id query provided and return just single user data", async () => {
@@ -48,7 +49,8 @@ describe("Users Crud Test", () => {
         password: expect.any(String),
         username: additionalUser.username,
         role: additionalUser.role,
-        fullname: additionalUser.fullname
+        fullname: additionalUser.fullname,
+        emailVerified: additionalUser.emailVerified,
       });
     });
     it("should response 404 (Not Found) when id query provided with nonexistent user id", async () => {

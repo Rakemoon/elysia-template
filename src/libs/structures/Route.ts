@@ -3,6 +3,7 @@ import type { JWTPayloadSpec } from "@elysiajs/jwt";
 import { StatusMap, type Handler } from "elysia";
 import TokenService from "#services/TokenService";
 import UserService from "#services/UserService";
+import EmailService from "#services/EmailService";
 
 export type RouteOptions = {
   name?: string;
@@ -17,7 +18,8 @@ type EliReq = Parameters<Handler>[0] & {
   jwt: {
     verify(jwt?: string): Promise<false | (Record<string, string | number> & JWTPayloadSpec)>;
     sign(morePayload: Record<string, string | number> & JWTPayloadSpec): Promise<string>
-  }
+  },
+  userId?: string;
 }
 
 export type Context<T extends object = {}> = {
@@ -47,11 +49,13 @@ export default abstract class Route {
   protected useService<Name extends ServiceNames>(ctx: Context<any>, name: Name)
   : [
       TokenService,
-      UserService
+      UserService,
+      EmailService,
     ][Name] {
     switch (name) {
       case ServiceNames.Token: return new TokenService(ctx) as never;
       case ServiceNames.User: return new UserService(ctx) as never;
+      case ServiceNames.Email: return new EmailService(ctx) as never;
       default: return new TokenService(ctx) as never;
     }
   }

@@ -1,5 +1,6 @@
 import { TypeCheck, TypeCompiler, t } from "elysia/type-system";
 import chalk from "chalk";
+import type SMTPConnection from "nodemailer/lib/smtp-connection";
 
 enum environtmentEnv {
   Production = "production",
@@ -14,7 +15,8 @@ const numberCompiler = TypeCompiler.Compile(t.Number());
 let errCount = 0;
 
 function compile<C extends TypeCheck<any>>(compiler: C, key: keyof NodeJS.ProcessEnv, def?: ReturnType<C["Encode"]>): ReturnType<C["Encode"]> {
-  const value = Reflect.get(process.env, key);
+  let value: string | number | undefined = Reflect.get(process.env, key);
+  if (value && compiler === numberCompiler) value = +value;
   try {
     for (const e of compiler.Errors(value)) throw e;
     return compiler.Encode(value);
@@ -38,5 +40,17 @@ export const jwt = {
   expireMinutes: compile(numberCompiler, "JWT_EXPIRATION_MINUTES", 30),
 }
 export const environtment: "production" | "development" | "test" = compile(environtmentCompiler, "NODE_ENV") as never;
+
+export const email = {
+  smtp: {
+    host: compile(stringCompiler, "SMTP_HOST"),
+    port: compile(numberCompiler, "SMTP_PORT"),
+    auth: {
+      user: compile(stringCompiler, "SMTP_USERNAME"),
+      pass: compile(stringCompiler, "SMTP_PASSWORD"),
+    }
+  } satisfies SMTPConnection.Options,
+  from: compile(stringCompiler, "EMAIL_FROM"),
+}
 
 if (errCount) process.exit(1);
