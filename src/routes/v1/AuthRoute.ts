@@ -113,7 +113,7 @@ export default class AuthRoute extends Route {
   }
 
   @Mount("PUT", "forgot-password")
-  @UseValidate(AuthValidations.doVerificationEmail)
+  @UseValidate(AuthValidations.doForgotPassword)
   @AddDetail({ description: "This endpoint will verify forgot password" })
   public async doForgotPasswordController(ctx: Context<AuthValidations.doForgotPasswordType>) {
     const users = this.useService(ctx, ServiceNames.User);
