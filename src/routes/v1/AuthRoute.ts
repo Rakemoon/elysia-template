@@ -130,4 +130,23 @@ export default class AuthRoute extends Route {
       throw e;
     }
   }
+
+  @Mount("POST", "refresh-access")
+  @UseValidate(AuthValidations.refreshAuthToken)
+  @AddDetail({ description: "This endpoint to refersh jwt auth" })
+  public async refreshAcessTokenController(ctx: Context<AuthValidations.refreshAuthTokenType>) {
+    const tokens = this.useService(ctx, ServiceNames.Token);
+    try {
+      const payload = await ctx.jwt.verify(ctx.body.token);
+      if (!payload || payload.type !== TokenTypes.Refresh || !payload.sub) throw "NotFound";
+      const token = await tokens.createAccess(payload.sub);
+      return this.json(token, "Sucess generate acess token");
+    } catch (e) {
+      if (e === "NotFound") {
+        ctx.set.status = "Not Found";
+        return this.json(null, "Token Not Found", "Not Found");
+      }
+      throw e;
+    }
+  }
 }

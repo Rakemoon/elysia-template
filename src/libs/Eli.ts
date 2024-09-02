@@ -30,7 +30,7 @@ export default class Eli {
   }
 
   public async init() {
-    await EmailService.initTransport(this.log);
+    if (environtment !== "test") await EmailService.initTransport(this.log);
     const regRoute = new RouteRegister(this.log, this.eli);
 
     //Registering Middleware

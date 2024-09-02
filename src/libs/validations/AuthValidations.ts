@@ -54,12 +54,19 @@ namespace AuthValidations {
     })
   }
 
+  export const refreshAuthToken = {
+    body: t.Object({
+      token: t.String({ description: "jwt refresh token" })
+    })
+  }
+
   export type loginType = ParseType<typeof login>;
   export type registerType = ParseType<typeof register>;
   export type createVerificationEmailType = ParseType<typeof createVerificationEmail>;
   export type doVerificationEmailType = ParseType<typeof doVerificationEmail>;
   export type createForgotPasswordType = ParseType<typeof createForgotPassword>;
   export type doForgotPasswordType = ParseType<typeof doForgotPassword>;
+  export type refreshAuthTokenType = ParseType<typeof refreshAuthToken>;
 }
 
 export default AuthValidations;

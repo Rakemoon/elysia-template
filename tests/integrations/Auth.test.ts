@@ -5,6 +5,8 @@ import RouteTest from "tests/utils/RouteTest";
 import { ISOStringRegex, JWTTokenRegex, UUIDRegex } from "tests/utils/Regex";
 import { seed, createRandomUsers, nuke, isEmailExist } from "tests/fixtures/Users.fixtures";
 import { compareHash } from "#util/index";
+import { createRefreshToken, tokenDetail } from "tests/fixtures/Token.fixtures";
+import { TokenTypes } from "#constants/index";
 
 const route = new RouteTest(EliTest, new AuthRoute());
 
@@ -229,6 +231,30 @@ describe("Authorization Test", () => {
       expect(bodyResult.status).toBe(409);
       expect(bodyResult.message).toBe("Email Already Taken");
       expect(bodyResult.data).toBeNull();
+    });
+  });
+  describe("POST /v1/auth/refresh-token", () => {
+    it("should response 200 (OK) and return the access token", async () => {
+      const { bodyResult } = await route.req("refreshAcessTokenController", {
+        body: {
+          token: await createRefreshToken(loginUser.id)
+        }
+      });
+      expect(bodyResult.status).toBe(200);
+      expect(bodyResult.message).toBe("Sucess generate acess token");
+      expect(bodyResult.data).toEqual({
+        expiration: expect.stringMatching(ISOStringRegex),
+        token: expect.stringMatching(JWTTokenRegex),
+      });
+      if (bodyResult.message === "Sucess generate acess token") {
+        const data = await tokenDetail(bodyResult.data.token);
+        expect(data).toBeTruthy();
+        expect(data).toEqual({
+          sub: loginUser.id,
+          iat: expect.any(Number),
+          type: TokenTypes.Access
+        });
+      }
     });
   });
 });
