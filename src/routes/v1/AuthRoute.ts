@@ -50,15 +50,19 @@ export default class AuthRoute extends Route {
     const { username, email, password, fullname } = ctx.body;
     const users = this.useService(ctx, ServiceNames.User);
     
-    if (await users.isEmailExist(email)) {
-      ctx.set.status = "Conflict";
-      return this.json(null, "Email Already Taken", "Conflict");
+    try {
+      await users.createUser({  username, email, password, fullname });
+      ctx.set.status = "Created";
+      if (!ctx.query.nextLogin) return this.json({}, "Success Registering User!", "Created");
+      return this.loginController({ ...ctx, body: { password, email }, query: {}});
+    } catch(e) {
+      if ((e as { cause: { code: string }}).cause.code === "23505") {
+        ctx.set.status = "Conflict";
+        return this.json(null, "Email Already Taken", "Conflict");
+      } else {
+        throw e;
+      }
     }
-
-    await users.createUser({  username, email, password, fullname });
-    ctx.set.status = "Created";
-    if (!ctx.query.nextLogin) return this.json({}, "Success Registering User!", "Created");
-    return this.loginController({ ...ctx, body: { password, email }, query: {}});
   }
 
   @Mount("POST", "verification-email")

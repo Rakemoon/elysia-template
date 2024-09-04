@@ -59,7 +59,9 @@ export function CatchAllError(target: new (...args: any[]) => any) {
       try {
         return await fn.call(this, ...args);
       } catch(e) {
-        throw new InternalServerError(`${target.constructor.name}: ${(e as Error).message}`);
+        const throwed = new InternalServerError(`${target.constructor.name}: ${(e as Error).message}`);
+        Reflect.set(throwed, "cause", e);
+        throw throwed;
       }
     }
     Reflect.defineProperty(target.prototype, key, prop);
