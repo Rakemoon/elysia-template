@@ -1,6 +1,6 @@
 import { type AuthLevel, ServiceNames } from "#constants/index";
 import type { JWTPayloadSpec } from "@elysiajs/jwt";
-import { StatusMap, type Handler } from "elysia";
+import Elysia, { StatusMap, type Handler } from "elysia";
 import TokenService from "#services/TokenService";
 import UserService from "#services/UserService";
 import EmailService from "#services/EmailService";
@@ -30,6 +30,7 @@ export type Context<T extends object = {}> = {
 };
 
 export default abstract class Route {
+  declare protected elysia: Elysia;
   public constructor(
     public options: RouteOptions = { prefix: "_no_prefixes_" }
   ) {}

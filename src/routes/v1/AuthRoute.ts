@@ -1,12 +1,10 @@
-import { email } from "#constants/env";
 import { AuthLevel, ServiceNames, TokenTypes } from "#constants/index";
-import { token } from "#database/schema";
 import { AddDetail, ApplyOptions, Mount, UseAuth, UseValidate } from "#decorators/index";
-import Route, { type Context } from "#structures/Route";
+import Route, { type Context, type RouteOptions } from "#structures/Route";
 import { compareHash } from "#util/index";
 import AuthValidations from "#validations/AuthValidations";
 
-@ApplyOptions({
+@ApplyOptions<RouteOptions>({
   prefix: "/v1/auth",
   name: "Authorization",
   description: "Sometimes you need authorization in your life",
@@ -14,7 +12,7 @@ import AuthValidations from "#validations/AuthValidations";
 export default class AuthRoute extends Route {
   @Mount("POST", "login")
   @UseValidate(AuthValidations.login)
-  @AddDetail({  description: "Endpoint to Login" })
+  @AddDetail({ description: "Endpoint to Login" })
   public async loginController(ctx: Context<AuthValidations.loginType>) {
     const { email, password } = ctx.body;
     const token = this.useService(ctx, ServiceNames.Token);

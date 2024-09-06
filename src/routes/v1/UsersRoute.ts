@@ -1,16 +1,15 @@
 import { AuthLevel, ServiceNames } from "#constants/index";
 import { AddDetail, ApplyOptions, Mount, UseValidate } from "#decorators/index";
-import Route, { type Context } from "#structures/Route";
+import Route, { type Context, type RouteOptions } from "#structures/Route";
 import UsersValidations from "#validations/UsersValidations";
 
-@ApplyOptions({
+@ApplyOptions<RouteOptions>({
   prefix: "/v1/users",
   name: "Users",
   description: "Users CRUD, only `Admin` who can access this",
   authLevel: AuthLevel.Admin,
 })
 export default class UsersRoute extends Route {
-
   async #controllerGetById(ctx: Context<UsersValidations.getsType>) {
     const users = this.useService(ctx, ServiceNames.User);
     const data = await users.getPlainUser(ctx.query.id!);

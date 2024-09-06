@@ -14,7 +14,9 @@ export default class RouteRegister {
   public constructor(
     public log: Logging,
     public elysia: Elysia,
-  ) {}
+  ) {
+    Reflect.set(Route.prototype, "elysia", elysia);
+  }
 
   private async authHandler(level: AuthLevel, ctx: Context) {
     const authorization = Reflect.get(ctx.headers, "authorization"); 

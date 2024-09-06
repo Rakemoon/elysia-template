@@ -15,6 +15,8 @@ export const users = pgTable("users", {
   emailVerified: boolean("email_verified").default(false).notNull(),
 });
 
+users
+
 export const token = pgTable("refresh_token", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("id").references(() => users.id).notNull(),

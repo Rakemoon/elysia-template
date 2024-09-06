@@ -13,12 +13,11 @@ export function Mount(method: Methods, path: string) {
   }
 }
 
-export function ApplyOptions(options: RouteOptions) {
-  return (target: new (opt: RouteOptions) => any) => {
-    return new Proxy(target, {
-      construct: (ctx) => new ctx(options)
+export function ApplyOptions<Options>(options: Options) {
+  return <Class extends object>(target: new (option: Options, ...rest: unknown[]) => Class) =>
+    new Proxy(target, {
+      construct: (Ctx, rest: unknown[]) => new Ctx(options, ...rest)
     });
-  }
 }
 
 export function UseValidate(schema: {

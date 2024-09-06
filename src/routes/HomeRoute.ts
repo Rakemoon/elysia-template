@@ -1,8 +1,8 @@
 import { AddDetail, ApplyOptions, Mount } from "#decorators/index";
-import Route from "#structures/Route";
+import Route, { type RouteOptions } from "#structures/Route";
 
-@ApplyOptions({
-  prefix: "/"
+@ApplyOptions<RouteOptions>({
+  prefix: "/",
 })
 export default class HomeRoute extends Route {
   @Mount("ALL", "/")
