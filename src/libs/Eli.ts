@@ -7,6 +7,7 @@ import ErrorHandler from "#components/ErrorHandler";
 import LoggingHandler from "#components/LoggingHandler";
 import chalk from "chalk";
 import { swagger } from "@elysiajs/swagger";
+import cors from "@elysiajs/cors";
 
 import "reflect-metadata";
 import { environtment, jwt as configJwt } from "#constants/env";
@@ -37,8 +38,15 @@ export default class Eli {
     new ErrorHandler(this).exec();
     if (this.log.level > LoggingLevel.Silent) new LoggingHandler(this).exec();
 
+    this.eli.use(cors({
+      origin: ["*"],
+      methods: ["GET"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+      credentials: false,
+    }));
     this.eli.use(jwt({ name: "jwt", secret: configJwt.secret }));
-    this.eli.use(swagger({ path: "docs", documentation: {
+    this.eli.use(swagger({
+      path: "docs", documentation: {
         info: {
           title: this.options.title,
           version: this.options.version,
@@ -54,7 +62,8 @@ export default class Eli {
             }
           }
         }
-      }}));
+      }
+    }));
 
     // Registering routes
     await regRoute.exec();
