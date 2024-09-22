@@ -1,23 +1,23 @@
 import { LoggingLevel } from "#constants/index";
 
 export default class Logging {
-  public constructor(
-    public level: LoggingLevel
-  ) {}
+    public constructor(
+        public level: LoggingLevel
+    ) {}
 
-  private get showStdout() {
-    return this.level === LoggingLevel.Stdout;
-  }
+    private get showStdout() {
+        return this.level === LoggingLevel.Stdout;
+    }
 
-  public info(...args: unknown[]) {
-    if (this.showStdout) return console.info(...args);
-  }
+    public info(...args: unknown[]): void {
+        if (this.showStdout) { console.info(...args); }
+    }
 
-  public error(...args: unknown[]) {
-    if (this.showStdout || this.level === LoggingLevel.JustShowError) return console.error(...args);
-  }
+    public error(...args: unknown[]): void {
+        if (this.showStdout || this.level === LoggingLevel.JustShowError) { console.error(...args); }
+    }
 
-  public warn(...args: unknown[]) {
-    if (this.showStdout) return console.error(...args);
-  }
+    public warn(...args: unknown[]): void {
+        if (this.showStdout) { console.error(...args); }
+    }
 }

@@ -5,9 +5,12 @@
   "type": "module",
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
+    "@rakemoon/eslint-config": "^2.0.3",
     "@types/bun": "latest",
     "@types/nodemailer": "^6.4.15",
-    "drizzle-kit": "^0.24.1"
+    "drizzle-kit": "^0.24.1",
+    "eslint-import-resolver-typescript": "^3.6.3",
+    "eslint-plugin-import": "^2.30.0"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
@@ -28,6 +31,8 @@
   "scripts": {
     "start": "bun --bun --env-file=.env.development.local --watch src/index.ts",
     "prod": "bun --bun --env-file=.env.production.local src/index.ts",
-    "db:seed": "bun drizzle/seeds/index.ts"
+    "db:seed": "bun drizzle/seeds/index.ts",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix"
   }
 }

@@ -1,31 +1,32 @@
+/* eslint-disable typescript/no-shadow */
 export const enum RouteMetadata {
-  Register = "route:registers",
-  Validation = "route:validations",
-  Detail = "route:details",
-  AuthLevel = "route:authlevel"
+    Register = "route:registers",
+    Validation = "route:validations",
+    Detail = "route:details",
+    AuthLevel = "route:authlevel"
 }
 
 export const enum LoggingLevel {
-  Silent,
-  Stdout,
-  JustShowError,
+    Silent = 0,
+    Stdout = 1,
+    JustShowError = 2
 }
 
 export const enum AuthLevel {
-  None,
-  User,
-  Admin
+    None = 0,
+    User = 1,
+    Admin = 2
 }
 
 export const enum TokenTypes {
-  Access,
-  Refresh,
-  EmailVerification,
-  ResetPassword,
+    Access = 0,
+    Refresh = 1,
+    EmailVerification = 2,
+    ResetPassword = 3
 }
 
 export const enum ServiceNames {
-  Token,
-  User,
-  Email,
+    Token = 0,
+    User = 1,
+    Email = 2
 }

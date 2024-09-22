@@ -24,7 +24,7 @@
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
     "experimentalDecorators": true,
-    "mitDecoratorMetadata": true,
+    "emitDecoratorMetadata": true,
     "baseUrl": "./",
     "paths": {
       "#decorators/*": ["./src/libs/decorators/*"],
