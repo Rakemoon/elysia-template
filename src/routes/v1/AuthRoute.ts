@@ -142,7 +142,7 @@ export default class AuthRoute extends Route {
         const tokens = this.useService(ctx, ServiceNames.Token);
         try {
             const payload = await ctx.jwt.verify(ctx.body.token);
-            if (payload === false || payload.type !== TokenTypes.ResetPassword || payload.sub === undefined) throw "NotFound";
+            if (payload === false || payload.type !== TokenTypes.Refresh || payload.sub === undefined) throw "NotFound";
             const token = await tokens.createAccess(payload.sub);
             return this.json(token, "Sucess generate acess token");
         } catch (error) {
