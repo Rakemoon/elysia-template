@@ -88,19 +88,35 @@ export default class RouteRegister {
                     if (authLevel !== undefined) beforeHandle = this.authHandler.bind(null, authLevel);
                 }
                 this.log.info("  \u251C\u2500\u2500", this.getMethodLog(method), chalk.bold(pathroute));
-                eli[method as "get"](
-                    pathroute,
-                    (route[key as keyof Route] as Function).bind(route),
-                    {
-                        ...beforeHandle === undefined ? {} : { beforeHandle },
-                        ...validations.get(key),
-                        detail: {
-                            ...details.get(key),
-                            security: [authLevel === undefined ? {} : { "Auth Key": [] }]
-                        } as DocumentDecoration,
-                        tags: route.options.name === undefined ? [] : [route.options.name]
-                    }
-                );
+                if (method === "ws") {
+                    eli[method](
+                        pathroute,
+                        {
+                            ...route[key as keyof Route],
+                            ...beforeHandle === undefined ? {} : { beforeHandle },
+                            ...validations.get(key),
+                            detail: {
+                                ...details.get(key),
+                                security: [authLevel === undefined ? {} : { "Auth Key": [] }]
+                            } as DocumentDecoration,
+                            tags: route.options.name === undefined ? [] : [route.options.name]
+                        }
+                    );
+                } else {
+                    eli[method as "get"](
+                        pathroute,
+                        (route[key as keyof Route] as Function).bind(route),
+                        {
+                            ...beforeHandle === undefined ? {} : { beforeHandle },
+                            ...validations.get(key),
+                            detail: {
+                                ...details.get(key),
+                                security: [authLevel === undefined ? {} : { "Auth Key": [] }]
+                            } as DocumentDecoration,
+                            tags: route.options.name === undefined ? [] : [route.options.name]
+                        }
+                    );
+                }
             }
             this.elysia.use(eli);
         }

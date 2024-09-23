@@ -51,6 +51,35 @@ export default class ExampleRoute extends Route {
 
 ```
 
+for socket controller you can define it like this
+
+```ts
+
+import { ApplyOptions, Mount } from "#decorators/index";
+import type { RouteOptions, WebsocketController } from "#structures/Route";
+
+@ApplyOptions<RouteOptions>({
+    prefix: "/"
+})
+export default class ExampleRoute extends Route {
+
+    @Mount("WS", "/")
+    public wsController: WebsocketController = {
+        open(ws) {
+            ws.send(`Connection open with id: ${ws.id}`);
+        },
+        message(ws, message) {
+            ws.send(message);
+        },
+
+        close(ws) {
+            console.log(`Connection closed with id: ${ws.id}`);
+        }
+    };
+}
+
+```
+
 > [!WARNING]
 > Remember to use default export !
 

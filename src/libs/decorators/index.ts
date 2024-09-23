@@ -3,18 +3,26 @@ import type { DocumentDecoration, TSchema } from "elysia";
 import type { AuthLevel } from "#constants/index";
 import { RouteMetadata } from "#constants/index";
 import type Route from "#structures/Route";
+import type { Context, WebsocketController } from "#structures/Route";
 
 import "reflect-metadata";
 
-type Methods = "ALL" | "DELETE" | "GET" | "PATCH" | "POST" | "PUT";
+type Methods = "ALL" | "DELETE" | "GET" | "PATCH" | "POST" | "PUT" | "WS";
 
-export function Mount(method: Methods, path: string) {
+export function Mount<Method extends Methods, Target extends Route, K extends keyof Target>(method: Method, path: string) {
     const em = method.toLowerCase() as Methods;
-    return (target: Route, key: string): void => {
+    const fn = (target: Target, key: K): void => {
         const result: Set<[string, string, string]> = (Reflect.getMetadata(RouteMetadata.Register, target) ?? new Set()) as never;
-        result.add([key, em, path]);
+        result.add([key as string, em, path]);
         Reflect.defineMetadata(RouteMetadata.Register, result, target);
     };
+    return fn as Method extends "WS"
+        ? Target[K] extends WebsocketController<any>
+            ? typeof fn
+            : never
+        : Target[K] extends (ctx: Context<any>) => any
+            ? typeof fn
+            : never;
 }
 
 export function ApplyOptions<Options>(options: Options) {
@@ -27,6 +35,7 @@ export function UseValidate(schema: {
     body?: TSchema;
     query?: TSchema;
     params?: TSchema;
+    response?: TSchema;
 }) {
     return (target: Route, key: string): void => {
         const result: Map<string, typeof schema> = (Reflect.getMetadata(RouteMetadata.Validation, target) ?? new Map()) as never;

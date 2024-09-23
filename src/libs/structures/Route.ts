@@ -1,4 +1,5 @@
 import type { JWTPayloadSpec } from "@elysiajs/jwt";
+import type { ServerWebSocket } from "bun";
 import { StatusMap } from "elysia";
 import type Elysia from "elysia";
 import type { Handler } from "elysia";
@@ -30,6 +31,29 @@ export type Context<T extends object = {}> = {
         ? T[k]
         : EliReq[k]
 };
+
+// eslint-disable-next-line typescript/consistent-type-definitions
+export interface WebsocketController<
+    T extends {
+        body?: unknown;
+        query?: unknown;
+        params?: unknown;
+        response?: unknown;
+    } = {},
+    RawWS extends ServerWebSocket<Context<T>> = ServerWebSocket<Context<T>> & { id: string; }
+> {
+    $ws?: {
+        [k in keyof RawWS]: k extends "send"
+            ? (data: T["response"] extends undefined
+                ? unknown
+                : T["response"]) => unknown
+            : RawWS[k];
+    };
+    open?(ws: NonNullable<this["$ws"]>): unknown;
+    message?(ws: NonNullable<this["$ws"]>, message: NonNullable<this["$ws"]>["data"]["body"]): unknown;
+    close?(ws: NonNullable<this["$ws"]>, code: number, message: NonNullable<this["$ws"]>["data"]["body"]): unknown;
+    drain?(ws: NonNullable<this["$ws"]>): unknown;
+}
 
 export default abstract class Route {
     declare protected elysia: Elysia;
